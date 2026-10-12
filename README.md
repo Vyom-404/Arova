@@ -1,18 +1,30 @@
-# Arova
+<p align="center">
+  <img src="client/public/arova-mark.svg" alt="Arova brand mark" width="88" />
+</p>
 
-**A modern full-stack storefront for discovering products, managing a personal cart and wishlist, and checking out with Razorpay Test Mode.**
+<h1 align="center">Arova</h1>
+
+<p align="center"><strong>A modern full-stack storefront for discovering products, managing a personal cart and wishlist, and checking out with Razorpay Test Mode.</strong></p>
+
+<p align="center">
+  <a href="#features">Features</a> ·
+  <a href="#getting-started">Get started</a> ·
+  <a href="#api-reference">API reference</a>
+</p>
 
 Arova pairs a React storefront with a Node.js and Express API backed by MongoDB. Customer accounts use JWT authentication stored in HTTP-only cookies. Product, wishlist, cart, and order data are served from the API, while React Context keeps cart information in sync across the shopping experience.
 
 ## Features
 
-- **Shop:** Browse products, search by name, filter by category, sort by price, and view product details.
-- **Save:** Keep a customer-specific wishlist.
-- **Cart:** Persist cart items and quantities, validate stock, and share cart state across the client.
-- **Checkout:** Review itemized totals, enter shipping details, and use Buy Now to go directly to checkout with a chosen quantity.
-- **Payments and orders:** Create Razorpay Test Mode payments, verify signatures on the server, and view saved order details and history.
-- **Accounts:** Register, sign in, and manage an authenticated customer account.
-- **Interface:** Responsive shopping pages with loading, error, and empty states, plus Arova branding and favicon.
+| Area | What you can do |
+| --- | --- |
+| **Shop** | Browse products, search by name, filter by category, sort by price, and view product details. |
+| **Wishlist** | Save products to a customer-specific wishlist. |
+| **Cart** | Keep cart items and quantities between visits, validate stock, and share cart state across the client. |
+| **Checkout** | Review an itemized total, enter shipping details, or use Buy Now to select a quantity and go directly to checkout. |
+| **Payments and orders** | Create Razorpay Test Mode payments, verify signatures on the server, and view order details and history. |
+| **Accounts** | Register, sign in, and manage an authenticated customer account. |
+| **Interface** | Use responsive shopping pages with loading, error, and empty states, plus consistent Arova branding. |
 
 ## Contents
 
@@ -25,10 +37,13 @@ Arova pairs a React storefront with a Node.js and Express API backed by MongoDB.
 
 ## Tech stack
 
-- **API:** Node.js, Express, Mongoose
-- **Database:** MongoDB
-- **Authentication:** bcrypt, JSON Web Tokens, HTTP-only cookies
-- **Client:** React, React Router, Context API, Vite, Axios
+| Layer | Tools |
+| --- | --- |
+| **Frontend** | React, React Router, Context API, Vite, Axios |
+| **Backend** | Node.js, Express, Mongoose |
+| **Database** | MongoDB |
+| **Authentication** | bcrypt, JSON Web Tokens, HTTP-only cookies |
+| **Payments** | Razorpay Test Mode |
 
 ## Project structure
 
