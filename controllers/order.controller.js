@@ -146,48 +146,95 @@ const verifyPayment = async (req, res) => {
     return res.status(400).json({ success: false, message: 'Payment verification details are incomplete' });
   }
 
+  const session = await mongoose.startSession();
+  let verifiedOrder;
+  let alreadyPaid = false;
   try {
-    const order = await Order.findOne({ _id: shopKartOrderId, customer: req.user._id });
-    if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
-    if (!order.razorpayOrderId || order.razorpayOrderId !== razorpay_order_id) {
-      return res.status(400).json({ success: false, message: 'Payment order does not match this ShopKart order' });
-    }
-    if (order.paymentStatus === 'PAID') {
-      if (order.razorpayPaymentId !== razorpay_payment_id) {
-        return res.status(409).json({ success: false, message: 'This order has already been paid' });
+    await session.withTransaction(async () => {
+      alreadyPaid = false;
+      const order = await Order.findOne({ _id: shopKartOrderId, customer: req.user._id }).session(session);
+      if (!order) {
+        const error = new Error('Order not found');
+        error.status = 404;
+        throw error;
       }
-      return res.json({ success: true, message: 'Payment already verified', order });
-    }
-
-    if (!isRazorpayConfigured()) {
-      return res.status(503).json({ success: false, message: 'Payment verification is not configured on the server' });
-    }
-
-    const expectedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-      .update(`${order.razorpayOrderId}|${razorpay_payment_id}`)
-      .digest('hex');
-    const expectedBuffer = Buffer.from(expectedSignature, 'hex');
-    const receivedBuffer = Buffer.from(razorpay_signature, 'hex');
-    if (expectedBuffer.length !== receivedBuffer.length || !crypto.timingSafeEqual(expectedBuffer, receivedBuffer)) {
-      return res.status(400).json({ success: false, message: 'Invalid payment signature' });
-    }
-
-    order.paymentStatus = 'PAID';
-    order.status = 'PLACED';
-    order.razorpayPaymentId = razorpay_payment_id;
-    await order.save();
-
-    if (order.source !== 'BUY_NOW') {
-      const updatedCart = await Cart.updateOne({ customer: req.user._id }, { $set: { items: [] } });
-      if (updatedCart.matchedCount === 0) {
-        await Cart.create({ customer: req.user._id, items: [] });
+      if (!order.razorpayOrderId || order.razorpayOrderId !== razorpay_order_id) {
+        const error = new Error('Payment order does not match this ShopKart order');
+        error.status = 400;
+        throw error;
       }
-    }
-    return res.json({ success: true, message: 'Payment verified and order placed', order });
+      if (!isRazorpayConfigured()) {
+        const error = new Error('Payment verification is not configured on the server');
+        error.status = 503;
+        throw error;
+      }
+
+      const expectedSignature = crypto
+        .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+        .update(`${order.razorpayOrderId}|${razorpay_payment_id}`)
+        .digest('hex');
+      const expectedBuffer = Buffer.from(expectedSignature, 'hex');
+      const receivedBuffer = Buffer.from(razorpay_signature, 'hex');
+      if (expectedBuffer.length !== receivedBuffer.length || !crypto.timingSafeEqual(expectedBuffer, receivedBuffer)) {
+        const error = new Error('Invalid payment signature');
+        error.status = 400;
+        throw error;
+      }
+
+      if (order.paymentStatus === 'PAID') {
+        if (order.razorpayPaymentId !== razorpay_payment_id) {
+          const error = new Error('This order has already been paid');
+          error.status = 409;
+          throw error;
+        }
+        alreadyPaid = true;
+        verifiedOrder = order;
+        return;
+      }
+
+      // Decrease stock only after a valid payment signature. The transaction
+      // keeps stock, order status, and cart changes together if any step fails.
+      for (const item of order.items) {
+        const stockUpdate = await Product.updateOne(
+          { _id: item.product, stock: { $gte: item.quantity } },
+          { $inc: { stock: -item.quantity } },
+          { session }
+        );
+        if (stockUpdate.modifiedCount !== 1) {
+          const error = new Error(`Not enough stock remains for ${item.name}. Please contact support about this payment.`);
+          error.status = 409;
+          throw error;
+        }
+      }
+
+      order.paymentStatus = 'PAID';
+      order.status = 'PLACED';
+      order.razorpayPaymentId = razorpay_payment_id;
+      await order.save({ session });
+
+      if (order.source !== 'BUY_NOW') {
+        const cart = await Cart.findOne({ customer: req.user._id }).session(session);
+        if (cart) {
+          cart.items = [];
+          await cart.save({ session });
+        }
+      }
+      verifiedOrder = order;
+    });
+
+    return res.json({
+      success: true,
+      message: alreadyPaid ? 'Payment already verified' : 'Payment verified and order placed',
+      order: verifiedOrder
+    });
   } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ success: false, message: error.message });
+    }
     console.error('Payment verification failed:', error.message);
     return res.status(500).json({ success: false, message: 'Unable to verify payment' });
+  } finally {
+    await session.endSession();
   }
 };
 

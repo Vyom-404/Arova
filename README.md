@@ -97,7 +97,7 @@ npm install
 cp .env.example .env
 ```
 
-Open `.env` and set `MONGO_URI` and `JWT_SECRET`. For MongoDB Atlas, create a database user, allow your current IP address in Network Access, and copy the connection string from Atlas. Replace its username, password, and database name with your own values. For a local MongoDB server, a URI such as `mongodb://127.0.0.1:27017/arova` can be used. If your database password contains special characters, URL-encode them in the connection string.
+Open `.env` and set `MONGO_URI` and `JWT_SECRET`. For MongoDB Atlas, create a database user, allow your current IP address in Network Access, and copy the connection string from Atlas. Replace its username, password, and database name with your own values. For local MongoDB, use a replica set so checkout transactions work; a single standalone MongoDB server is not sufficient. If your database password contains special characters, URL-encode them in the connection string.
 
 Use a long, private value for `JWT_SECRET`. To enable payment checkout, add your Razorpay **Test Mode** credentials:
 
