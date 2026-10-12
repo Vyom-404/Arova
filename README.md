@@ -58,47 +58,72 @@ Arova pairs a React storefront with a Node.js and Express API backed by MongoDB.
 
 ### Prerequisites
 
-- Node.js and npm
-- MongoDB, either locally or through MongoDB Atlas
+- Node.js 18 or newer and npm
+- A MongoDB database, either local or on MongoDB Atlas
+- A Razorpay account with Test Mode keys to try checkout (optional for browsing)
 
-### 1. Configure the API
+### 1. Download the project
 
-Install the API dependencies and create its environment file:
+Clone the repository using its GitHub URL, then open the project folder:
+
+```bash
+git clone https://github.com/Vyom-404/Arova.git
+cd Arova
+```
+
+Alternatively, download the repository as a ZIP from [GitHub](https://github.com/Vyom-404/Arova) and extract it.
+
+### 2. Configure the database and API
+
+Install the backend dependencies and create a local environment file:
 
 ```bash
 npm install
 cp .env.example .env
 ```
 
-Set `MONGO_URI` to your database connection string and replace `JWT_SECRET` with a long, private random value. To enable checkout, add Razorpay **Test Mode** credentials:
+Open `.env` and set `MONGO_URI` and `JWT_SECRET`. For MongoDB Atlas, create a database user, allow your current IP address in Network Access, and copy the connection string from Atlas. Replace its username, password, and database name with your own values. For a local MongoDB server, a URI such as `mongodb://127.0.0.1:27017/arova` can be used. If your database password contains special characters, URL-encode them in the connection string.
+
+Use a long, private value for `JWT_SECRET`. To enable payment checkout, add your Razorpay **Test Mode** credentials:
 
 ```env
 RAZORPAY_KEY_ID=rzp_test_your_key_id
 RAZORPAY_KEY_SECRET=your_test_mode_key_secret
 ```
 
-The API only accepts a key ID beginning with `rzp_test_`. Keep the key secret in the backend `.env`; it is never sent to the browser. The public test Key ID is returned to React only when starting Razorpay Checkout. The API uses Node's built-in `fetch` for Razorpay's Orders API.
+The API only accepts a key ID beginning with `rzp_test_`. Keep the key secret in the backend `.env`; it is never sent to the browser. The public test Key ID is returned to React only when starting Razorpay Checkout. The API uses Node's built-in `fetch` for Razorpay's Orders API. You can leave the example keys in place if you only want to browse the store; payment creation will require valid Test Mode credentials.
 
-Start the API from the repository root:
+### 3. Configure the client
 
-```bash
-npm run dev
-```
-
-The API listens on `http://localhost:3002` by default. Use `npm start` to run it without nodemon.
-
-### 2. Configure the client
-
-In a second terminal, install the client dependencies and start Vite:
+Open a second terminal in the project folder and install the client dependencies:
 
 ```bash
 cd client
 npm install
 cp .env.example .env
+```
+
+For local development, the default `VITE_API_URL=http://localhost:3002` should match the backend port. If you change the backend port, update both `PORT` in the root `.env` and `VITE_API_URL` in `client/.env`.
+
+### 4. Start the application
+
+In the first terminal, from the project root, start the API:
+
+```bash
 npm run dev
 ```
 
-Open the Vite URL shown in the terminal (normally `http://localhost:5173`). The client sends API requests with credentials enabled so the browser can store and send the authentication cookie.
+The API listens on `http://localhost:3002` by default. Keep this terminal open. To run without the development auto-reloader, use `npm start` instead.
+
+In the second terminal, start the React client from the `client` folder:
+
+```bash
+npm run dev
+```
+
+Open the Vite URL shown in the terminal, normally <http://localhost:5173>. Register an account or sign in to use the protected shopping pages. The client sends API requests with credentials enabled so the browser can store and send the authentication cookie.
+
+Both the API and client must be running while you use the app. These commands start a development setup on the computer where they are run; they do not publish the site to the internet.
 
 ### Optional sample products
 
