@@ -1,24 +1,27 @@
 # Arova
 
-Arova is a full-stack shopping application with customer authentication, a MongoDB product catalogue, a persistent wishlist and cart, Razorpay Test Mode checkout, and order history. The Express API uses Mongoose and JWTs stored in HTTP-only cookies. The React client uses React Router, Axios, and Context API to browse, save, add to cart, and check out. The Arova monogram is shared by the site branding, empty states, and favicon.
+**A modern full-stack storefront for discovering products, managing a personal cart and wishlist, and checking out with Razorpay Test Mode.**
+
+Arova pairs a React storefront with a Node.js and Express API backed by MongoDB. Customer accounts use JWT authentication stored in HTTP-only cookies. Product, wishlist, cart, and order data are served from the API, while React Context keeps cart information in sync across the shopping experience.
 
 ## Features
 
-- Register and sign in to a customer account
-- Hash passwords with bcrypt and authenticate using a signed JWT cookie
-- Browse products from MongoDB, search by name, filter by category, and sort by price
-- View product details
-- Add and remove products from a customer-specific wishlist
-- Add products to a persistent cart and increase quantities for existing items
-- Update or remove cart items with stock validation
-- Share cart state through React Context; derive item count and subtotal from cart data
-- Show an itemized cart summary and progress toward complimentary delivery over ₹1,999
-- Checkout with shipping validation and server-side price/stock verification
-- Buy Now asks for a quantity and opens checkout directly, without changing the customer's cart
-- Razorpay Test Mode order creation and server-side payment-signature verification
-- Persisted order snapshots, confirmation details, and customer-specific order history
-- Development-only sequential order status progression for the Lab 6 bonus
-- Loading, error, and empty states across catalogue, cart, checkout, wishlist, and orders
+- **Shop:** Browse products, search by name, filter by category, sort by price, and view product details.
+- **Save:** Keep a customer-specific wishlist.
+- **Cart:** Persist cart items and quantities, validate stock, and share cart state across the client.
+- **Checkout:** Review itemized totals, enter shipping details, and use Buy Now to go directly to checkout with a chosen quantity.
+- **Payments and orders:** Create Razorpay Test Mode payments, verify signatures on the server, and view saved order details and history.
+- **Accounts:** Register, sign in, and manage an authenticated customer account.
+- **Interface:** Responsive shopping pages with loading, error, and empty states, plus Arova branding and favicon.
+
+## Contents
+
+- [Tech stack](#tech-stack)
+- [Project structure](#project-structure)
+- [Getting started](#getting-started)
+- [Environment variables](#environment-variables)
+- [API reference](#api-reference)
+- [Frontend routes](#frontend-routes)
 
 ## Tech stack
 
@@ -27,7 +30,7 @@ Arova is a full-stack shopping application with customer authentication, a Mongo
 - **Authentication:** bcrypt, JSON Web Tokens, HTTP-only cookies
 - **Client:** React, React Router, Context API, Vite, Axios
 
-## Project layout
+## Project structure
 
 ```text
 .
@@ -51,12 +54,14 @@ Arova is a full-stack shopping application with customer authentication, a Mongo
 └── client/.env.example     # Client environment template
 ```
 
-## Requirements
+## Getting started
+
+### Prerequisites
 
 - Node.js and npm
-- A MongoDB database (local or MongoDB Atlas)
+- MongoDB, either locally or through MongoDB Atlas
 
-## Getting started
+### 1. Configure the API
 
 Install the API dependencies and create its environment file:
 
@@ -65,16 +70,14 @@ npm install
 cp .env.example .env
 ```
 
-Set `MONGO_URI` in `.env` to your MongoDB connection string and replace `JWT_SECRET` with a long, private random value.
-
-For checkout, add your Razorpay **Test Mode** credentials to the backend `.env`:
+Set `MONGO_URI` to your database connection string and replace `JWT_SECRET` with a long, private random value. To enable checkout, add Razorpay **Test Mode** credentials:
 
 ```env
 RAZORPAY_KEY_ID=rzp_test_your_key_id
 RAZORPAY_KEY_SECRET=your_test_mode_key_secret
 ```
 
-The API only accepts a key ID beginning with `rzp_test_`. The key secret must remain in the backend `.env`; it is never sent to the browser. The public test Key ID is returned to React only when starting Razorpay Checkout. Node's built-in `fetch` calls Razorpay's Orders API, so no Razorpay npm SDK is required.
+The API only accepts a key ID beginning with `rzp_test_`. Keep the key secret in the backend `.env`; it is never sent to the browser. The public test Key ID is returned to React only when starting Razorpay Checkout. The API uses Node's built-in `fetch` for Razorpay's Orders API.
 
 Start the API from the repository root:
 
@@ -82,9 +85,11 @@ Start the API from the repository root:
 npm run dev
 ```
 
-The API listens on `http://localhost:3002` by default. You can also use `npm start` to run it without nodemon.
+The API listens on `http://localhost:3002` by default. Use `npm start` to run it without nodemon.
 
-In a second terminal, install and start the client:
+### 2. Configure the client
+
+In a second terminal, install the client dependencies and start Vite:
 
 ```bash
 cd client
@@ -93,7 +98,7 @@ cp .env.example .env
 npm run dev
 ```
 
-Open the Vite URL shown in the terminal (normally `http://localhost:5173`). The client sends requests with credentials enabled so the browser can store and send the authentication cookie.
+Open the Vite URL shown in the terminal (normally `http://localhost:5173`). The client sends API requests with credentials enabled so the browser can store and send the authentication cookie.
 
 ### Optional sample products
 
@@ -128,7 +133,7 @@ The script inserts a sample product only when a product with the same name does 
 
 Do not commit `.env` files or put production secrets in the client environment. Variables prefixed with `VITE_` are exposed to the browser.
 
-## API
+## API reference
 
 All endpoints accept and return JSON. Protected endpoints use the `token` HTTP-only cookie set by a successful login. In Postman, log in first and keep the cookie enabled for subsequent requests. The browser client sends credentials automatically.
 
