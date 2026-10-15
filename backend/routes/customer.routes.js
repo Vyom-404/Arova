@@ -13,9 +13,10 @@ const router = express.Router();
 router.post('/register', register);
 router.post('/login', login);
 
-// Protected routes
+// Account routes
 router.get('/me', protect, getProfile);
-router.post('/logout', protect, logout);
+// Logout remains available with an expired token so it can always clear the cookie.
+router.post('/logout', logout);
 router.patch('/change-password', protect, changePassword);
 
 module.exports = router;
