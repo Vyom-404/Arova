@@ -521,6 +521,8 @@ img { display: block; max-width: 100%; }
   .order-detail-panel, .shipping-detail-panel { padding: 16px; }
   .auth-page { grid-template-columns: 1fr; }
   .auth-aside { min-height: 265px; padding: 21px max(23px, env(safe-area-inset-right)) 21px max(23px, env(safe-area-inset-left)); }
+  .orb-one { right: 9%; bottom: 3%; }
+  .orb-two { right: 23%; bottom: 6%; }
   .aside-copy { padding: 24px 0; }
   .aside-copy h1 { font-size: clamp(48px, 12vw, 61px); }
   .aside-copy > p:last-child { margin-top: 12px; font-size: 14px; }
