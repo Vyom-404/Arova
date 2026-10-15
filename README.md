@@ -31,6 +31,7 @@ Arova pairs a React storefront with a Node.js and Express API backed by MongoDB.
 - [Tech stack](#tech-stack)
 - [Project structure](#project-structure)
 - [Getting started](#getting-started)
+- [Deploying to Render](#deploying-to-render)
 - [Environment variables](#environment-variables)
 - [API reference](#api-reference)
 - [Frontend routes](#frontend-routes)
@@ -52,12 +53,13 @@ Arova pairs a React storefront with a Node.js and Express API backed by MongoDB.
 ├── backend/                # Express API and all backend code
 │   ├── config/              # Razorpay server configuration
 │   ├── controllers/         # Customer, product, wishlist, cart, and order handlers
-│   ├── middlewares/         # JWT cookie authentication
-│   ├── models/              # Customer, product, separate Cart, and Order schemas
-│   ├── routes/               # Customer, product, wishlist, cart, and order routes
-│   ├── utils/                # JWT creation
-│   ├── index.js              # Express app and MongoDB connection
-│   └── package.json          # Backend dependencies and scripts
+│   ├── middlewares/        # JWT cookie authentication
+│   ├── models/             # Customer, product, Cart, and Order schemas
+│   ├── routes/             # Customer, product, wishlist, cart, and order routes
+│   ├── utils/              # JWT creation
+│   ├── index.js             # Express app and MongoDB connection
+│   ├── package.json         # Backend dependencies and scripts
+│   └── package-lock.json    # Locked backend dependency versions
 ├── client/                 # Vite + React application
 │   ├── public/             # Arova favicon
 │   └── src/
@@ -66,7 +68,7 @@ Arova pairs a React storefront with a Node.js and Express API backed by MongoDB.
 │       ├── context/        # Shared cart state
 │       ├── pages/          # Store, checkout, order history, and account pages
 │       └── services/       # Axios API client and request helpers
-├── .env.example            # API environment template
+├── .env.example            # Local API environment template
 └── client/.env.example     # Client environment template
 ```
 
@@ -100,7 +102,7 @@ cd ..
 cp .env.example backend/.env
 ```
 
-Open `backend/.env` and set `MONGO_URI` and `JWT_SECRET`. For MongoDB Atlas, create a database user, allow your current IP address in Network Access, and copy the connection string from Atlas. Replace its username, password, and database name with your own values. For local MongoDB, use a replica set so checkout transactions work; a single standalone MongoDB server is not sufficient. If your database password contains special characters, URL-encode them in the connection string.
+Open `backend/.env` and set `MONGO_URI` and `JWT_SECRET`. Generate a unique JWT secret with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. For MongoDB Atlas, create a database user, allow your current IP address in Network Access, and copy the connection string from Atlas. Replace its username, password, and database name with your own values. For local MongoDB, use a replica set so checkout transactions work; a single standalone MongoDB server is not sufficient. If your database password contains special characters, URL-encode them in the connection string.
 
 Use a long, private value for `JWT_SECRET`. To enable payment checkout, add your Razorpay **Test Mode** credentials:
 
@@ -117,7 +119,7 @@ Open a second terminal in the project folder and install the client dependencies
 
 ```bash
 cd client
-npm install
+npm ci
 cp .env.example .env
 ```
 
@@ -144,17 +146,41 @@ Open the Vite URL shown in the terminal, normally <http://localhost:5173>. Regis
 
 Both the API and client must be running while you use the app. These commands start a development setup on the computer where they are run; they do not publish the site to the internet.
 
+## Deploying to Render
+
+Deploy the API as a Render **Web Service** and the React app as a Render **Static Site**, each from the same repository.
+
+### API web service
+
+Set the service's root directory to `backend`, build command to `npm ci`, and start command to `npm start`. Add these environment variables in the Render dashboard:
+
+- `MONGO_URI` — production MongoDB connection string
+- `JWT_SECRET` — a unique random secret of at least 32 characters
+- `NODE_ENV` — `production`
+- `CLIENT_URL` — the exact deployed client origin, including `https://` and no path
+- `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` — optional Test Mode credentials
+
+Render supplies `PORT` automatically; do not set it manually. Allow the Render service to connect to MongoDB Atlas using Atlas Network Access settings. Keep secrets in Render's environment settings, not in the repository.
+
+### Client static site
+
+Set the static site's root directory to `client`, build command to `npm ci && npm run build`, and publish directory to `dist`. Set `VITE_API_URL` to the deployed API URL (for example, `https://your-api.onrender.com`). Vite embeds this value at build time, so redeploy the client after changing it.
+
+For client-side routes, add a Render rewrite rule from `/*` to `/index.html` with action **Rewrite**. This is configured separately from `client/vercel.json`.
+
+The API enables credentialed CORS for the one origin in `CLIENT_URL` and issues `Secure`, `SameSite=None` cookies in production for cross-origin client requests. If browser cookie restrictions prevent sign-in from persisting between separate hosting domains, use frontend and API custom domains under the same parent domain, such as `shop.example.com` and `api.example.com`.
+
 ## Environment variables
 
 ### API (`backend/.env`)
 
 | Variable | Purpose | Example |
 | --- | --- | --- |
-| `PORT` | API listening port | `3002` |
+| `PORT` | Local API port; Render sets this automatically | `3002` locally |
 | `MONGO_URI` | MongoDB connection string | `mongodb://127.0.0.1:27017/shopkart` |
 | `JWT_SECRET` | Secret used to sign and verify JWTs | Use a long, random private value |
 | `JWT_EXPIRES_IN` | JWT lifetime (optional; defaults to `7d`) | `7d` |
-| `NODE_ENV` | Runtime mode; enables secure cookies in production | `development` |
+| `NODE_ENV` | Runtime mode; use `development` locally and `production` on Render | `development` |
 | `CLIENT_URL` | Allowed browser origin for credentialed CORS | `http://localhost:5173` |
 | `RAZORPAY_KEY_ID` | Razorpay Test Mode public key ID (`rzp_test_...`) | Set from the Test Mode dashboard |
 | `RAZORPAY_KEY_SECRET` | Razorpay Test Mode secret; backend only | Set from the Test Mode dashboard |
@@ -179,15 +205,14 @@ All endpoints accept and return JSON. Protected endpoints use the `token` HTTP-o
 | `POST` | `/customers/register` | No | Create a customer account |
 | `POST` | `/customers/login` | No | Authenticate and set the `token` cookie |
 | `GET` | `/customers/me` | Yes | Return the authenticated customer |
-| `POST` | `/customers/logout` | Yes | Clear the authentication cookie |
+| `POST` | `/customers/logout` | No | Clear the authentication cookie; works even if its token has expired |
 | `PATCH` | `/customers/change-password` | Yes | Change the authenticated customer's password |
 
-Registration requires `fullName`, `email`, `password`, and `phone`. Passwords must contain at least six characters. Login accepts `email` and `password`.
+Registration requires `fullName`, `email`, `password`, and `phone`. Passwords must contain at least six characters. Login accepts `email` and `password`. Logout is safe to call without a valid token and clears the browser's authentication cookie.
 
 ### Product endpoints
 
 | Method | Endpoint | Authentication | Description |
-| --- | --- | --- | --- |
 | `POST` | `/products` | No | Create a product |
 | `GET` | `/products` | No | List products |
 | `GET` | `/products/:id` | No | Get one product by MongoDB ID |
