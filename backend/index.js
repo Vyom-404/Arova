@@ -1,4 +1,9 @@
-require('dotenv').config();
+const path = require('path');
+const fs = require('fs');
+
+const backendEnv = path.join(__dirname, '.env');
+const rootEnv = path.join(__dirname, '..', '.env');
+require('dotenv').config({ path: fs.existsSync(backendEnv) ? backendEnv : rootEnv });
 
 const express = require('express');
 const mongoose = require('mongoose');

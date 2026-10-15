@@ -2,11 +2,11 @@
   "name": "shopkart-backend",
   "version": "1.0.0",
   "description": "ShopKart customer authentication service (Engineering Lab 01)",
-  "main": "index.js",
+  "main": "backend/index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js",
-    "seed:products": "node scripts/seed-products.js"
+    "start": "node backend/index.js",
+    "dev": "nodemon backend/index.js",
+    "seed:products": "npm --prefix backend run seed:products"
   },
   "keywords": [
     "shopkart",

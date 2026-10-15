@@ -49,13 +49,15 @@ Arova pairs a React storefront with a Node.js and Express API backed by MongoDB.
 
 ```text
 .
-├── config/                 # Razorpay server configuration
-├── controllers/            # Customer, product, wishlist, cart, and order handlers
-├── middlewares/            # JWT cookie authentication
-├── models/                 # Customer, product, separate Cart, and Order schemas
-├── routes/                 # Customer, product, wishlist, cart, and order routes
-├── utils/                  # JWT creation
-├── index.js                # Express app and MongoDB connection
+├── backend/                # Express API and all backend code
+│   ├── config/              # Razorpay server configuration
+│   ├── controllers/         # Customer, product, wishlist, cart, and order handlers
+│   ├── middlewares/         # JWT cookie authentication
+│   ├── models/              # Customer, product, separate Cart, and Order schemas
+│   ├── routes/               # Customer, product, wishlist, cart, and order routes
+│   ├── utils/                # JWT creation
+│   ├── index.js              # Express app and MongoDB connection
+│   └── package.json          # Backend dependencies and scripts
 ├── client/                 # Vite + React application
 │   ├── public/             # Arova favicon
 │   └── src/
@@ -64,7 +66,6 @@ Arova pairs a React storefront with a Node.js and Express API backed by MongoDB.
 │       ├── context/        # Shared cart state
 │       ├── pages/          # Store, checkout, order history, and account pages
 │       └── services/       # Axios API client and request helpers
-├── scripts/seed-products.js # Optional sample product seeder
 ├── .env.example            # API environment template
 └── client/.env.example     # Client environment template
 ```
@@ -90,11 +91,11 @@ Alternatively, download the repository as a ZIP from [GitHub](https://github.com
 
 ### 2. Configure the database and API
 
-Install the backend dependencies and create a local environment file:
+Install the backend dependencies and create a local environment file. The backend reads `backend/.env` first, then the root `.env` for compatibility:
 
 ```bash
 npm install
-cp .env.example .env
+cp .env.example backend/.env
 ```
 
 Open `.env` and set `MONGO_URI` and `JWT_SECRET`. For MongoDB Atlas, create a database user, allow your current IP address in Network Access, and copy the connection string from Atlas. Replace its username, password, and database name with your own values. For local MongoDB, use a replica set so checkout transactions work; a single standalone MongoDB server is not sufficient. If your database password contains special characters, URL-encode them in the connection string.
@@ -118,7 +119,7 @@ npm install
 cp .env.example .env
 ```
 
-For local development, the default `VITE_API_URL=http://localhost:3002` should match the backend port. If you change the backend port, update both `PORT` in the root `.env` and `VITE_API_URL` in `client/.env`.
+For local development, the default `VITE_API_URL=http://localhost:3002` should match the backend port. If you change the backend port, update `PORT` in `backend/.env` (or the root `.env`) and `VITE_API_URL` in `client/.env`.
 
 ### 4. Start the application
 
@@ -128,7 +129,7 @@ In the first terminal, from the project root, start the API:
 npm run dev
 ```
 
-The API listens on `http://localhost:3002` by default. Keep this terminal open. To run without the development auto-reloader, use `npm start` instead.
+The API listens on `http://localhost:3002` by default. Keep this terminal open. To run without the development auto-reloader, use `npm start` instead. You can also run these commands inside `backend/`.
 
 In the second terminal, start the React client from the `client` folder:
 
@@ -152,7 +153,7 @@ The script inserts a sample product only when a product with the same name does 
 
 ## Environment variables
 
-### API (`.env`)
+### API (`backend/.env`, with root `.env` also supported)
 
 | Variable | Purpose | Example |
 | --- | --- | --- |
