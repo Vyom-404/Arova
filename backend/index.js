@@ -49,7 +49,7 @@ app.use((err, req, res, next) => {
   return res.status(500).json({ success: false, message: err.message || 'Internal server error' });
 });
 
-const PORT = process.env.PORT
+const PORT = process.env.PORT || 3002;
 const MONGO_URI = process.env.MONGO_URI 
 
 mongoose
