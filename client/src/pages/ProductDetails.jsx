@@ -18,7 +18,7 @@ export default function ProductDetails() {
   const [saved, setSaved] = useState(false);
   const [wishlistSaving, setWishlistSaving] = useState(false);
   const [wishlistError, setWishlistError] = useState('');
-  const [buyNowQuantity, setBuyNowQuantity] = useState(1);
+  const [buyNowQuantity, setBuyNowQuantity] = useState('1');
   const [showBuyNowPrompt, setShowBuyNowPrompt] = useState(false);
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export default function ProductDetails() {
     return () => { active = false; };
   }, [id]);
 
-  useEffect(() => setBuyNowQuantity(1), [id]);
+  useEffect(() => setBuyNowQuantity('1'), [id]);
 
   useEffect(() => {
     if (!showBuyNowPrompt) return undefined;
@@ -82,17 +82,32 @@ export default function ProductDetails() {
   }
 
   function handleBuyNow() {
-    setBuyNowQuantity(1);
+    setBuyNowQuantity('1');
     setShowBuyNowPrompt(true);
   }
 
   function continueToCheckout() {
-    if (!product || !Number.isInteger(buyNowQuantity) || buyNowQuantity < 1 || buyNowQuantity > product.stock) return;
+    const quantity = Number(buyNowQuantity);
+    if (!product || !Number.isInteger(quantity) || quantity < 1 || quantity > product.stock) return;
     navigate('/checkout', { state: { buyNow: {
       productId: product._id,
-      quantity: buyNowQuantity,
+      quantity,
       preview: { name: product.name, image: product.image, price: product.price }
     } } });
+  }
+
+  function adjustBuyNowQuantity(amount) {
+    const current = Number(buyNowQuantity) || 1;
+    setBuyNowQuantity(String(Math.max(1, Math.min(product.stock, current + amount))));
+  }
+
+  function normalizeBuyNowQuantity() {
+    const quantity = Number(buyNowQuantity);
+    if (!Number.isInteger(quantity) || quantity < 1) {
+      setBuyNowQuantity('1');
+    } else {
+      setBuyNowQuantity(String(Math.min(quantity, product.stock)));
+    }
   }
 
   return <div className="home-page"><Navbar customer={customer} /><main className="product-detail-page">
@@ -123,15 +138,18 @@ export default function ProductDetails() {
         <h2 id="buy-now-title">Choose quantity<span>.</span></h2>
         <p className="buy-now-product-name">{product.name}</p>
         <label className="buy-now-quantity">QUANTITY
-          <input autoFocus type="number" min="1" max={product.stock} step="1" value={buyNowQuantity} disabled={product.stock < 1} onChange={event => {
-            const value = Number(event.target.value);
-            setBuyNowQuantity(Number.isInteger(value) ? Math.min(Math.max(1, value), product.stock || 1) : 1);
-          }} aria-label={`Quantity to buy for ${product.name}`} />
-          <span>{product.stock} available</span>
+          <span className="quantity-stepper">
+            <button type="button" aria-label="Decrease quantity" disabled={product.stock < 1 || Number(buyNowQuantity || 1) <= 1} onClick={() => adjustBuyNowQuantity(-1)}>−</button>
+            <input autoFocus type="text" inputMode="numeric" pattern="[0-9]*" value={buyNowQuantity} disabled={product.stock < 1} onChange={event => {
+              if (/^\d*$/.test(event.target.value)) setBuyNowQuantity(event.target.value);
+            }} onBlur={normalizeBuyNowQuantity} aria-label={`Quantity to buy for ${product.name}`} />
+            <button type="button" aria-label="Increase quantity" disabled={product.stock < 1 || Number(buyNowQuantity || 0) >= product.stock} onClick={() => adjustBuyNowQuantity(1)}>+</button>
+          </span>
+          <span className="quantity-available">{product.stock} available</span>
         </label>
         <div className="buy-now-dialog-actions">
           <button className="outline-button" type="button" onClick={() => setShowBuyNowPrompt(false)}>Cancel</button>
-          <button className="dark-button" type="button" disabled={product.stock < 1} onClick={continueToCheckout}>Continue to checkout <span>→</span></button>
+          <button className="dark-button" type="button" disabled={product.stock < 1 || !Number.isInteger(Number(buyNowQuantity)) || Number(buyNowQuantity) < 1 || Number(buyNowQuantity) > product.stock} onClick={continueToCheckout}>Continue to checkout <span>→</span></button>
         </div>
       </section>
     </div>}
