@@ -23,9 +23,9 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-   origin: process.env.FRONTEND_URL || (
+   origin: process.env.CLIENT_URL || (
     process.env.NODE_ENV === 'production'
-      ? 'arova-liart.vercel.app'
+      ? 'http://arova-liart.vercel.app'
       : 'http://localhost:5173'
   ),
     credentials: true
