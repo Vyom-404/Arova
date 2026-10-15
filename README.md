@@ -91,14 +91,16 @@ Alternatively, download the repository as a ZIP from [GitHub](https://github.com
 
 ### 2. Configure the database and API
 
-Install the backend dependencies and create a local environment file. The backend reads `backend/.env` first, then the root `.env` for compatibility:
+Install the backend dependencies and create its local environment file:
 
 ```bash
-npm install
+cd backend
+npm ci
+cd ..
 cp .env.example backend/.env
 ```
 
-Open `.env` and set `MONGO_URI` and `JWT_SECRET`. For MongoDB Atlas, create a database user, allow your current IP address in Network Access, and copy the connection string from Atlas. Replace its username, password, and database name with your own values. For local MongoDB, use a replica set so checkout transactions work; a single standalone MongoDB server is not sufficient. If your database password contains special characters, URL-encode them in the connection string.
+Open `backend/.env` and set `MONGO_URI` and `JWT_SECRET`. For MongoDB Atlas, create a database user, allow your current IP address in Network Access, and copy the connection string from Atlas. Replace its username, password, and database name with your own values. For local MongoDB, use a replica set so checkout transactions work; a single standalone MongoDB server is not sufficient. If your database password contains special characters, URL-encode them in the connection string.
 
 Use a long, private value for `JWT_SECRET`. To enable payment checkout, add your Razorpay **Test Mode** credentials:
 
@@ -119,17 +121,18 @@ npm install
 cp .env.example .env
 ```
 
-For local development, the default `VITE_API_URL=http://localhost:3002` should match the backend port. If you change the backend port, update `PORT` in `backend/.env` (or the root `.env`) and `VITE_API_URL` in `client/.env`.
+For local development, the default `VITE_API_URL=http://localhost:3002` should match the backend port. If you change the backend port, update `PORT` in `backend/.env` and `VITE_API_URL` in `client/.env`.
 
 ### 4. Start the application
 
-In the first terminal, from the project root, start the API:
+In the first terminal, start the API from the `backend` folder:
 
 ```bash
+cd backend
 npm run dev
 ```
 
-The API listens on `http://localhost:3002` by default. Keep this terminal open. To run without the development auto-reloader, use `npm start` instead. You can also run these commands inside `backend/`.
+The API listens on `http://localhost:3002` by default. Keep this terminal open. To run without the development auto-reloader, use `npm start` instead.
 
 In the second terminal, start the React client from the `client` folder:
 
@@ -141,19 +144,9 @@ Open the Vite URL shown in the terminal, normally <http://localhost:5173>. Regis
 
 Both the API and client must be running while you use the app. These commands start a development setup on the computer where they are run; they do not publish the site to the internet.
 
-### Optional sample products
-
-The product listing reads from MongoDB. To insert the included sample products into the database, run this from the repository root:
-
-```bash
-npm run seed:products
-```
-
-The script inserts a sample product only when a product with the same name does not already exist. Products can also be added with `POST /products`.
-
 ## Environment variables
 
-### API (`backend/.env`, with root `.env` also supported)
+### API (`backend/.env`)
 
 | Variable | Purpose | Example |
 | --- | --- | --- |
