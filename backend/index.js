@@ -25,7 +25,7 @@ app.use(
   cors({
    origin: process.env.CLIENT_URL || (
     process.env.NODE_ENV === 'production'
-      ? 'http://arova-liart.vercel.app'
+      ? 'https://arova-liart.vercel.app'
       : 'http://localhost:5173'
   ),
     credentials: true
