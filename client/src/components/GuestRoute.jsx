@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import api from '../services/api';
+import ConnectionScreen from './ConnectionScreen';
 
 export default function GuestRoute() {
   const [authenticated, setAuthenticated] = useState(null);
@@ -14,7 +15,7 @@ export default function GuestRoute() {
   }, []);
 
   if (authenticated === null) {
-    return <div className="loading-page"><span className="loader" />Checking your session…</div>;
+    return <ConnectionScreen />;
   }
 
   return authenticated ? <Navigate to="/home" replace /> : <Outlet />;

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import api from '../services/api';
 import { CartProvider } from '../context/CartContext';
+import ConnectionScreen from './ConnectionScreen';
 
 /**
  * Route-level authentication guard. It checks the HttpOnly cookie with the API
@@ -26,7 +27,7 @@ export default function ProtectedRoute() {
   }, []);
 
   if (state.checking) {
-    return <div className="loading-page"><span className="loader" />Checking your session…</div>;
+    return <ConnectionScreen />;
   }
 
   if (!state.customer) {

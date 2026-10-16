@@ -34,6 +34,30 @@ img { display: block; max-width: 100%; }
 
 @keyframes enter { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes image-enter { from { opacity: .65; transform: scale(1.025); } to { opacity: 1; transform: scale(1); } }
+@keyframes connection-progress { from { transform: translateX(-110%); } to { transform: translateX(310%); } }
+
+/* Backend connection / cold-start screen */
+.connection-screen { position: relative; display: grid; min-height: 100vh; min-height: 100svh; place-items: center; overflow: hidden; padding: 28px 20px 74px; background: var(--paper); }
+.connection-card { position: relative; isolation: isolate; width: min(100%, 520px); overflow: hidden; border: 1px solid #d9d7ca; padding: clamp(26px, 7vw, 46px); background: var(--surface); box-shadow: 0 24px 70px #173f3410; text-align: center; }
+.connection-brand { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 9px; color: var(--green); font: 800 17px var(--sans); letter-spacing: .12em; text-transform: uppercase; }
+.connection-mark { width: 39px; height: 39px; }
+.connection-brand .brand-period { color: var(--terracotta); }
+.connection-art { position: relative; display: grid; width: 126px; height: 126px; place-items: center; margin: 35px auto 23px; border-radius: 50%; background: #edf0e8; }
+.connection-ring { position: absolute; border: 1px solid #bd9b6466; border-radius: 50%; }
+.connection-ring-one { inset: 9px; }
+.connection-ring-two { inset: 20px; border-color: #b965454d; }
+.connection-spark { color: var(--terracotta); font-size: 42px; line-height: 1; animation: connection-turn 12s linear infinite; }
+.connection-dot { position: absolute; top: 14px; right: 17px; width: 11px; height: 11px; border-radius: 50%; background: #d9bd81; }
+@keyframes connection-turn { to { transform: rotate(360deg); } }
+.connection-eyebrow { margin: 0 0 12px; color: var(--terracotta); font: 700 10px var(--sans); letter-spacing: .15em; }
+.connection-card h1 { margin: 0; color: var(--green-deep); font: 500 clamp(37px, 8vw, 54px)/1.04 var(--serif); letter-spacing: -.035em; }
+.connection-copy { max-width: 350px; margin: 14px auto 24px; color: var(--muted); font-size: 14px; line-height: 1.7; }
+.connection-progress { width: min(100%, 220px); height: 3px; overflow: hidden; margin: 0 auto 10px; border-radius: 99px; background: #e4e4da; }
+.connection-progress span { display: block; width: 30%; height: 100%; border-radius: inherit; background: var(--terracotta); animation: connection-progress 1.4s ease-in-out infinite; }
+.connection-status { margin: 0; color: #7b8178; font: 600 10px var(--sans); letter-spacing: .08em; }
+.connection-foot { position: absolute; bottom: max(24px, env(safe-area-inset-bottom)); margin: 0; color: #74796f; font: 700 9px var(--sans); letter-spacing: .16em; text-align: center; }
+@media (max-width: 420px) { .connection-card { padding: 24px 21px 29px; } .connection-art { width: 108px; height: 108px; margin: 28px auto 20px; } }
+@media (prefers-reduced-motion: reduce) { .connection-spark, .connection-progress span { animation: none; } }
 
 /* Store header */
 .announcement-bar { display: flex; min-height: 34px; align-items: center; justify-content: center; gap: 10px; background: var(--green-deep); color: #f7f4ed; font: 600 11px var(--sans); letter-spacing: .11em; }
